@@ -112,7 +112,7 @@ void display7SEG(int num){
 
 const int  MAX_LED = 4;
 int index_led = 0;
-int led_buffer[4] = {1,2,3,0};
+int led_buffer[4];
 void upd7Seg(int index){
 	HAL_GPIO_WritePin(GPIOA,EN0_Pin|EN1_Pin|EN2_Pin|EN3_Pin, GPIO_PIN_SET);
 	switch(index){
@@ -132,12 +132,17 @@ void upd7Seg(int index){
 			break;
 	}
 	display7SEG(led_buffer[index]);
-
+}
+void updateClockBuffer(int hour, int minute){
+	led_buffer[0] = hour/10;
+	led_buffer[1] = hour%10;
+	led_buffer[2] = minute/10;
+	led_buffer[3] = minute%10;
 }
 int main(void)
 {
   /* USER CODE BEGIN 1 */
-
+	int hour = 15, minute = 8, second = 50;
   /* USER CODE END 1 */
 
   /* MCU Configuration--------------------------------------------------------*/
@@ -168,7 +173,20 @@ int main(void)
   while (1)
   {
     /* USER CODE END WHILE */
-
+	  updateClockBuffer(hour,minute);
+	  	  second++;
+	  	  if(second >= 60){
+	  		  second = 0;
+	  		  minute++;
+	  	  }
+	  	  if(minute >= 60){
+	  		  minute = 0;
+	  		  hour++;
+	  	  }
+	  	  if(hour >= 24){
+	  		  hour = 0;
+	  	  }
+	  	  HAL_Delay(1000);
     /* USER CODE BEGIN 3 */
   }
   /* USER CODE END 3 */
