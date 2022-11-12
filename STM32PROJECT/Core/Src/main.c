@@ -296,8 +296,9 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-int counter_7Seg = 50;
+int counter_7Seg = 25;
 int counter_Led = 100;
+
 
 void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef * htim ){
 	counter_7Seg --;
@@ -306,7 +307,7 @@ void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef * htim ){
 	if(counter_7Seg <= 0){
 		upd7Seg(index_led++);
 		if(index_led == 4) index_led = 0;
-		counter_7Seg = 50;
+		counter_7Seg = 25;
 	}
 	if(counter_Led == 0){
 		HAL_GPIO_TogglePin (GPIOA , DOT_Pin);
