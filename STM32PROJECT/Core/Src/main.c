@@ -61,44 +61,44 @@ void display7SEG(int num){
 	  case 0:
 		  HAL_GPIO_WritePin(GPIOB,G_Pin, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB,B_Pin|C_Pin|D_Pin|E_Pin|F_Pin|A_Pin, GPIO_PIN_RESET);
-		      break;
+		  break;
 	  case 1:
 		  HAL_GPIO_WritePin(GPIOB,B_Pin|C_Pin, GPIO_PIN_RESET);
 		  HAL_GPIO_WritePin(GPIOB,A_Pin|D_Pin|E_Pin|F_Pin|G_Pin, GPIO_PIN_SET);
-	  		  break;
+	  	  break;
 	  case 2:
 		  HAL_GPIO_WritePin(GPIOB,F_Pin|C_Pin, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB,B_Pin|G_Pin|D_Pin|E_Pin|A_Pin, GPIO_PIN_RESET);
-	  		  break;
+	  	  break;
 	  case 3:
 		  HAL_GPIO_WritePin(GPIOB,F_Pin|E_Pin, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB,B_Pin|G_Pin|D_Pin|C_Pin|A_Pin, GPIO_PIN_RESET);
-	  		  break;
+	  	  break;
 	  case 4:
 		  HAL_GPIO_WritePin(GPIOB,A_Pin|E_Pin|D_Pin, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB,B_Pin|G_Pin|F_Pin|C_Pin, GPIO_PIN_RESET);
-	  		  break;
+	  	  break;
 	  case 5:
 		  HAL_GPIO_WritePin(GPIOB,B_Pin|E_Pin, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB,F_Pin|G_Pin|D_Pin|C_Pin|A_Pin, GPIO_PIN_RESET);
-	  		  break;
+	  	  break;
 	  case 6:
 		  HAL_GPIO_WritePin(GPIOB,B_Pin, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB,F_Pin|G_Pin|D_Pin|E_Pin|C_Pin|A_Pin, GPIO_PIN_RESET);
-	  		  break;
+	  	  break;
 	  case 7:
 		  HAL_GPIO_WritePin(GPIOB,F_Pin|E_Pin|D_Pin|G_Pin, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB,B_Pin|C_Pin|A_Pin, GPIO_PIN_RESET);
-	  		  break;
+	  	  break;
 	  case 8:
 		  HAL_GPIO_WritePin(GPIOB,B_Pin|C_Pin|D_Pin|E_Pin|F_Pin|A_Pin|G_Pin, GPIO_PIN_RESET);
-	  		  break;
+	  	  break;
 	  case 9:
 		  HAL_GPIO_WritePin(GPIOB,E_Pin, GPIO_PIN_SET);
 		  HAL_GPIO_WritePin(GPIOB,B_Pin|C_Pin|D_Pin|G_Pin|F_Pin|A_Pin, GPIO_PIN_RESET);
-	  		  break;
+	  	  break;
 	  default:
-	  		  break;
+	  	  break;
 	  }
   }
 
@@ -134,19 +134,24 @@ void updateClockBuffer(int hour, int minute){
 	led_buffer[1] = minute%10;
 }
 
-
 int timer0_counter = 0;
 int timer0_flag = 0;
+int timer1_counter = 0;
+int check =0;
 int TIMER_CYCLE = 10;
-void setTimer0 ( int duration ){
-	timer0_counter = duration / TIMER_CYCLE ;
+
+void setTimer1 ( int duration_7seg ){
+	timer1_counter = duration_7seg / TIMER_CYCLE ;
 	timer0_flag = 0;
 }
 
 void timer_run (){
-	if( timer0_counter > 0){
-		timer0_counter --;
-		if( timer0_counter == 0) timer0_flag = 1;
+	if( timer1_counter > 0){
+		timer1_counter --;
+		if( timer1_counter == 0) {
+			timer0_flag = 1;
+			check++;
+		}
 	}
 }
 /* USER CODE END 0 */
@@ -186,25 +191,30 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  setTimer0(1000);
+  setTimer1(250);
   while (1) {
 	  if(timer0_flag == 1){
-		  HAL_GPIO_TogglePin (GPIOA , LED_RED_Pin);
-		  HAL_GPIO_TogglePin (GPIOA , DOT_Pin);
-		  updateClockBuffer(second,minute);
-		  second++;
-		  if(second >= 60){
-		  	  	second = 0;
-		  	  	minute++;
+		  upd7Seg(index_led++);
+		  if(index_led == 4) index_led = 0;
+		  setTimer1(250);
+		  if(check-4 == 0){
+	  	  	  HAL_GPIO_TogglePin (GPIOA , LED_RED_Pin);
+	  		  HAL_GPIO_TogglePin (GPIOA , DOT_Pin);
+	  		  updateClockBuffer(second,minute);
+	  		  second++;
+	  		  if(second >= 60){
+	  		  	  	second = 0;
+	  		  	  	minute++;
+	  		  }
+	  		  if(minute >= 60){
+	  		  	  	minute = 0;
+	  		  	  	hour++;
+	  		  }
+	  		  if(hour >= 24){
+	  		  	    hour = 0;
+	  		  }
+	  		  check = 0;
 		  }
-		  if(minute >= 60){
-		  	  	minute = 0;
-		  	  	hour++;
-		  }
-		  if(hour >= 24){
-		  	    hour = 0;
-		  }
-		  setTimer0(1000);
 	  }
     /* USER CODE END WHILE */
     /* USER CODE BEGIN 3 */
@@ -333,26 +343,12 @@ static void MX_GPIO_Init(void)
 }
 
 /* USER CODE BEGIN 4 */
-int counter_7Seg = 25;
+//int counter_7Seg = 25;
 //int counter_Led = 100;
 
 
 void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef * htim ){
 	timer_run ();
-
-	counter_7Seg --;
-	//counter_Led--;
-
-	if(counter_7Seg <= 0){
-		upd7Seg(index_led++);
-		if(index_led == 4) index_led = 0;
-		counter_7Seg = 25;
-	}
-	/*if(counter_Led == 0){
-		HAL_GPIO_TogglePin (GPIOA , DOT_Pin);
-		HAL_GPIO_TogglePin (GPIOA , LED_RED_Pin);
-		counter_Led = 100;
-	}*/
 }
 /* USER CODE END 4 */
 
