@@ -110,24 +110,28 @@ void display7SEG(int num){
 
 }
 
-void upd7Seg(int numb){
+const int  MAX_LED = 4;
+int index_led = 0;
+int led_buffer[4] = {1,2,3,0};
+void upd7Seg(int index){
 	HAL_GPIO_WritePin(GPIOA,EN0_Pin|EN1_Pin|EN2_Pin|EN3_Pin, GPIO_PIN_SET);
-	if(numb == 0){
-		HAL_GPIO_WritePin(GPIOA,EN0_Pin, GPIO_PIN_RESET);
-		display7SEG(1);
+	switch(index){
+		case 0:
+			HAL_GPIO_WritePin(GPIOA,EN0_Pin, GPIO_PIN_RESET);
+			break;
+		case 1:
+			HAL_GPIO_WritePin(GPIOA,EN1_Pin, GPIO_PIN_RESET);
+			break;
+		case 2:
+			HAL_GPIO_WritePin(GPIOA,EN2_Pin, GPIO_PIN_RESET);
+			break;
+		case 3:
+			HAL_GPIO_WritePin(GPIOA,EN3_Pin, GPIO_PIN_RESET);
+			break;
+		default:
+			break;
 	}
-	else if (numb == 1) {
-		HAL_GPIO_WritePin(GPIOA,EN1_Pin, GPIO_PIN_RESET);
-		display7SEG(2);
-	}
-	else if (numb == 2) {
-		HAL_GPIO_WritePin(GPIOA,EN2_Pin, GPIO_PIN_RESET);
-		display7SEG(3);
-	}
-	else {
-		HAL_GPIO_WritePin(GPIOA,EN3_Pin, GPIO_PIN_RESET);
-		display7SEG(0);
-	}
+	display7SEG(led_buffer[index]);
 
 }
 int main(void)
@@ -294,15 +298,14 @@ static void MX_GPIO_Init(void)
 /* USER CODE BEGIN 4 */
 int counter_7Seg = 50;
 int counter_Led = 100;
-int numb = 0;
 
 void HAL_TIM_PeriodElapsedCallback ( TIM_HandleTypeDef * htim ){
 	counter_7Seg --;
 	counter_Led--;
 
 	if(counter_7Seg <= 0){
-		upd7Seg(numb++);
-		if(numb == 4) numb = 0;
+		upd7Seg(index_led++);
+		if(index_led == 4) index_led = 0;
 		counter_7Seg = 50;
 	}
 	if(counter_Led == 0){
